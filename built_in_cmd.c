@@ -20,3 +20,11 @@ int	ft_built_in_cmd(char **argv, char **env)
 		return (0);
 	return (0);
 }
+
+
+
+
+
+
+
+ghntgh
