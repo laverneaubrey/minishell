@@ -1,31 +1,34 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_echo.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/01/08 19:01:15 by laubrey           #+#    #+#             */
+/*   Updated: 2022/01/11 20:02:01 by rchau            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void	status_writing()
+int	ft_echo(char **argv)
 {
-	char *st;
-
-	st = ft_itoa(exit_status);
-	write(1, st, ft_strlen(st));
-	free(st);
-}
-
-int	ft_echo(char **str)
-{
-	int i;
-	int j;
+	int	i;
+	int	j;
 
 	i = 0;
-	if (str[1] && !ft_strncmp(str[1], "-n\0", 3))
+	if (argv[1] && !ft_strncmp(argv[1], "-n\0", 3))
 		i++;
-	while (str[++i])
+	while (argv[++i])
 	{
-		if (!ft_strncmp(str[i], "$?\0", 3))
-			status_writing();
-		else
-			write(1, str[i], ft_strlen(str[i]));
-		write(1, " ", 1);
+		j = -1;
+		while (argv[i][++j])
+			write(1, &argv[i][j], 1);
+		if (argv[i + 1])
+			write(1, " ", 1);
 	}
-	if (!(str[1] || ft_strncmp(str[1], "-n\0", 3)))
+	if (!argv[1] || ft_strncmp(argv[1], "-n\0", 3))
 		write(1, "\n", 1);
 	return (0);
 }

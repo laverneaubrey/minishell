@@ -1,25 +1,26 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_env.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/01/08 19:01:27 by laubrey           #+#    #+#             */
+/*   Updated: 2022/01/11 20:02:06 by rchau            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-int ft_env(char **argv, char **env)
+int	ft_env(char **argv, char **env)
 {
-	int i;
+	int	i;
 
 	i = 0;
-	if (argv[1] && argv[1][0] == '=')
+	if (argv[1])
 	{
-		write(1, "env: setenv ", 12);
-		write(1, argv[1], ft_strlen(argv[i + 1]));
-		write(1, ": Invalid argument\n", 19);
-		exit_status = 1;
-		return (0);
-	}
-	else if (argv[1])
-	{
-		write(1, "env: ", 5);
-		write(1, argv[1], ft_strlen(argv[i + 1]));
-		write(1, ": No such file or directory\n", 28);
-		exit_status = 127;
-		return (0);
+		error_nsfod("env", argv[1]);
+		return (127);
 	}
 	else
 	{
@@ -33,5 +34,5 @@ int ft_env(char **argv, char **env)
 			i++;
 		}
 	}
-	return (1);
+	return (0);
 }

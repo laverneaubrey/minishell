@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laubrey <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/18 18:44:14 by laubrey           #+#    #+#             */
-/*   Updated: 2021/10/18 18:44:19 by laubrey          ###   ########.fr       */
+/*   Created: 2022/01/10 15:31:08 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:36:20 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,28 @@
 
 int	ft_atoi(const char *str)
 {
-	long	bet;
-	int		cou;
+	long	res;
+	long	max;
+	int		sign;
+	int		i;
 
-	cou = 1;
-	bet = 0;
-	while (str && ((*str == '\f') | (*str == '\t') | (*str == '\v')
-			| (*str == '\r') | (*str == '\n') | (*str == ' ')))
-		str++;
-	if ((*str == '-') || (*str == '+'))
-		if (*str++ == '-')
-			cou = -1;
-	while (str && ((*str >= '0') && (*str <= '9')))
+	i = 0;
+	sign = 1;
+	res = 0;
+	max = 214748364;
+	while (str[i] && (str[i] == 32 || str[i] == '\t' || str[i] == '\n' || \
+	str[i] == '\v' || str[i] == '\f' || str[i] == '\r'))
+		i++;
+	if (str[i] == '-' || str[i] == '+')
+		if (str[i++] == '-')
+			sign = -1;
+	while (str[i] && str[i] >= '0' && str[i] <= '9')
 	{
-		if ((bet > 2147483647) && (cou == 1))
+		if ((res > max || (res == max && (str[i] - '0') > 7)) && sign == 1)
 			return (-1);
-		else if ((bet > 2147483647) && (cou == -1))
+		if ((res > max || (res == max && (str[i] - '0') > 8)) && sign == -1)
 			return (0);
-		bet = bet * 10 + (*str - '0');
-		str++;
+		res = res * 10 + (str[i++] - '0');
 	}
-	return (cou * bet);
+	return ((int)res * sign);
 }

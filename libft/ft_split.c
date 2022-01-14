@@ -3,81 +3,97 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laubrey <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/18 18:47:39 by laubrey           #+#    #+#             */
-/*   Updated: 2021/10/18 19:01:29 by laubrey          ###   ########.fr       */
+/*   Created: 2022/01/10 15:32:39 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:36:33 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	makeclean(char **s, int i)
+static size_t	words(char const *s, char c)
 {
-	while (i > 0)
-	{
-		free(s[i]);
-		i--;
-	}
-	free(s);
-}
-
-void	line(char **stolb, int nw, const char *s, char cut)
-{
-	int	coul;
-	int	i;
+	size_t	i;
+	size_t	len;
 
 	i = 0;
-	while ((s) && (nw > i))
+	len = 0;
+	while (s[i])
 	{
-		while ((*s == cut) && (*s != '\0'))
-			s++;
-		coul = 0;
-		while (*s && (*s != cut))
+		while (s[i] == c && s[i])
+			i++;
+		while (s[i] && s[i] != c)
 		{
-			coul++;
-			s++;
+			while (s[i] != c && s[i])
+				i++;
+			len++;
 		}
-		stolb[i] = (char *) malloc(sizeof(char) * (coul + 1));
-		if (!*stolb)
-			makeclean(stolb, i);
-		ft_strlcpy(stolb[i], s - coul, coul + 1);
-		i++;
 	}
-	stolb[nw] = NULL;
+	return (len);
 }
 
-int	couword(char const *str, char cut)
+static size_t	wordlen(char const *s, char c)
 {
-	int	cou;
+	size_t	i;
 
-	cou = 0;
-	if (!(str[0]))
-		return (cou);
-	while (*str)
+	i = 0;
+	while (s[i] && s[i] != c)
+		i++;
+	return (i);
+}
+
+static void	*leak(char **tab, size_t n)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < n)
 	{
-		while (ft_strchr(&cut, *str) && *str)
-			str++;
-		while (*str && (*str != cut))
-			str++;
-		cou++;
+		free(tab[i]);
+		i++;
 	}
-	if (*--str == cut)
-		return (cou - 1);
-	return (cou);
+	free(tab);
+	return (NULL);
+}
+
+static void	put_words(char **tab, size_t word, char const *s, char c)
+{
+	size_t	i;
+	size_t	j;
+	size_t	n;
+	size_t	len;
+
+	i = 0;
+	n = 0;
+	while (n < word)
+	{
+		while (s[i] && s[i] == c)
+			i++;
+		len = wordlen(&s[i], c);
+		tab[n] = (char *)malloc(sizeof(char) * (len + 1));
+		if (!tab[n])
+			leak(tab, n);
+		j = 0;
+		while (s[i] && j < len)
+			tab[n][j++] = s[i++];
+		tab[n][j] = '\0';
+		n++;
+	}
+	tab[n] = NULL;
 }
 
 char	**ft_split(char const *s, char c)
 {
-	int		nw;
-	char	**stolb;
+	size_t	word;
+	char	**tab;
 
-	if (s == NULL)
+	if (!s)
 		return (NULL);
-	nw = couword(s, c);
-	stolb = (char **) malloc(sizeof(char *) * (nw + 1));
-	if (!stolb)
+	word = words(s, c);
+	tab = (char **)malloc(sizeof(char *) * (word + 1));
+	if (!tab)
 		return (NULL);
-	line(stolb, nw, s, c);
-	return (stolb);
+	put_words(tab, word, s, c);
+	return (tab);
 }

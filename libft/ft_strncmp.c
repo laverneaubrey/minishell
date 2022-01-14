@@ -3,27 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strncmp.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laubrey <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/18 18:49:00 by laubrey           #+#    #+#             */
-/*   Updated: 2021/10/18 18:49:01 by laubrey          ###   ########.fr       */
+/*   Created: 2022/01/10 15:33:03 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:33:04 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_strncmp(const char *s1, const char *s2, size_t	n)
+int	ft_strncmp(const char *s1, const char *s2, size_t n)
 {
-	unsigned char	*fis;
-	unsigned char	*sec;
+	unsigned char	*p1;
+	unsigned char	*p2;
 	size_t			i;
 
+	p1 = (unsigned char *)s1;
+	p2 = (unsigned char *)s2;
 	i = 0;
-	fis = (unsigned char *)s1;
-	sec = (unsigned char *)s2;
-	while ((fis[i] == sec[i]) && n > i && fis[i])
+	while ((p1[i] || p2[i]) && i < n)
+	{
+		if (p1[i] != p2[i])
+			return (p1[i] - p2[i]);
 		i++;
-	if (n == i)
-		return (0);
-	return (fis[i] - sec[i]);
+	}
+	return (0);
 }

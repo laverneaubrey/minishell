@@ -3,31 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   ft_memmove.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laubrey <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/18 18:46:38 by laubrey           #+#    #+#             */
-/*   Updated: 2021/10/18 18:46:40 by laubrey          ###   ########.fr       */
+/*   Created: 2022/01/10 15:32:21 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:32:22 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	*ft_memmove(void *dst, const void *src, size_t	len)
+void	*ft_memmove(void *dest, const void *src, size_t n)
 {
-	size_t				i;
-	unsigned char		*to;
-	const unsigned char	*from;
+	unsigned char	*d;
+	unsigned char	*s;
 
-	i = len;
-	to = (unsigned char *)dst;
-	from = (const unsigned char *)src;
-	if (!src && !dst)
+	if (!dest && !src)
 		return (NULL);
-	if (to > from)
-		while (len--)
-			to[len] = from[len];
-	else if (to <= from)
-		while (0 < i--)
-			to[len - i - 1] = from[len - i - 1];
-	return (dst);
+	d = (unsigned char *)dest;
+	s = (unsigned char *)src;
+	if (d < s)
+		while (n--)
+			*d++ = *s++;
+	else
+	{
+		d += n;
+		s += n;
+		while (n--)
+			*--d = *--s;
+	}
+	return (dest);
 }

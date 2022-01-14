@@ -1,37 +1,76 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_unset.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/01/08 19:02:09 by laubrey           #+#    #+#             */
+/*   Updated: 2022/01/11 22:16:30 by rchau            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-int uns_rewrite(char *arg, char **env, int n)
+int	unset_checker(char *argv)
 {
-	char *sup;
+	int	i;
 
-	while ((*env)[n])
+	g_status = 0;
+	i = 0;
+	if (argv[0] != '_' && !ft_isalpha(argv[0]))
 	{
-		sup = env[n + 1]
+		g_status = error_nva("unset", argv);
+		return (g_status);
+	}
+	while (argv[i])
+	{
+		if (argv[i] != '_' && argv[i] != '=' && argv[i] != '+'
+			&& !ft_isalpha(argv[i]) && !ft_isdigit(argv[i]))
+			g_status = error_nva("unset", argv);
+		if (argv[i] == '+' && argv[i + 1] != '=')
+			g_status = error_nva("unset", argv);
+		i++;
+	}
+	return (g_status);
+}
+
+void	uns_rewrite(char **env, int n)
+{
+	char	*sup;
+
+	while (env[n])
+	{
+		sup = env[n + 1];
 		free(env[n]);
-		env[n] = sup;
+		if (sup != NULL)
+		{
+			env[n] = ft_strdup(sup);
+			n++;
+		}
+		else
+			env[n] = NULL;
 	}
 }
 
-int ft_unset(char **arg, char **env)
+int	ft_unset(char **argv, char **env)
 {
 	int	i;
-	int j;
+	int	j;
 
 	i = 0;
-	if (!arg[1])
+	if (!argv[1] || *(argv[1]) == '\0')
 		return (0);
-	while(arg[i])
+	while (argv[i])
 	{
-		if (!ft_isalpha(arg[i][0]) || ft_strchr("=.\\\0", arg[1][0]))
-			error_nva(arg[0], arg[i]);
-		j = -1;
-		while (arg[i][++j])
-			if (ft_isalnum(arg[i][j]))
-				error_nva(arg[0], arg[i]);
-		j = env_search_same(arg[i], env);
-		if (j)
-			uns_rewrite(arg[i], env, j);
+		if (!unset_checker(argv[i]))
+		{
+			j = env_search_same(argv[i], env);
+			if (j >= 0)
+				uns_rewrite(env, j);
+			g_status = 0;
+		}
 		i++;
 	}
-	return (0);
+	return (g_status);
 }

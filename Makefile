@@ -2,22 +2,30 @@ NAME	=	minishell
 #NAME_B	=	minishell_bonus
 
 HEADER	=	minishell.h
-#HEADER_B	= ./bonus/so_long_b.h
 
 
-SRC		= 	*.c
-#SRC_B	=	./bonus/so_long_b.c	./bonus/error_nulls_b.c	\
-#			./bonus/checker_b.c	./bonus/moving_b.c
+SRC		= 	dollar.c		errors.c		ft_cd.c		\
+			ft_echo.c		ft_env.c		ft_exit.c	\
+			ft_export.c		ft_pwd.c		ft_unset.c	\
+			main.c			utils.c			parser.c	\
+			parser_utils.c	quotes.c		redirect.c	\
+			support_fun.c	builtin.c		exec.c		\
+			parser_utils_2.c	
 
 OBJS	=	$(SRC:.c=.o)
-#OBJS_B	=	$(SRC_B:.c=.o)
 
-GCC		=	gcc
+# RLIB	=	-L/Users/laubrey/homebrew/Cellar/readline/8.1.1/lib/
+# RINCL	=	-I/Users/laubrey/homebrew/Cellar/readline/8.1.1/include
+
+RLIB	=	-L/Users/rchau/.brew/Cellar/readline/8.1.1/lib/ 
+RINCL	=	-I/Users/rchau/.brew/Cellar/readline/8.1.1/include
+
+RLINE	=	-lreadline
+GCC		=	gcc -g
 RM		=	rm -f
 CFLAGS	=	-Werror -Wextra -Wall
 
 all		:	$(NAME)
-
 
 
 .c.o:
@@ -25,25 +33,16 @@ all		:	$(NAME)
 
 $(NAME):	$(OBJS) $(HEADER)
 		$(MAKE) -C ./libft
-		#$(MAKE) -C ./get_next_line
-		$(GCC) $(CFLAGS) $(OBJS) ./libft/libft.a ./get_next_line/get_next_line.a -o $(NAME) -lmlx -framework OpenGL -framework AppKit -I
+		$(GCC) $(CFLAGS) $(OBJS)  $(RLINE) $(RLIB) $(RINCL) ./libft/libft.a -o $(NAME)
 
-#bonus	:	$(OBJS_B) $(HEADER_B)
-#		$(MAKE) -C ./libft
-#		$(MAKE) -C ./get_next_line
-#		$(GCC) $(CFLAGS) $(OBJS_B) ./libft/libft.a ./get_next_line/get_next_line.a -o $(NAME_B) -lmlx -framework OpenGL -framework AppKit -I
 
 clean:
 		$(MAKE) clean -C ./libft
-		#$(MAKE) clean -C ./get_next_line
 		$(RM) $(OBJS)
-		#$(RM) $(OBJS_B)
 
 fclean	:	clean
 		$(MAKE) fclean -C ./libft
-		#$(MAKE) fclean -C ./get_next_line
 		$(RM) $(NAME)
-		#$(RM) $(NAME_B)
 
 re		:	fclean all
 

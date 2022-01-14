@@ -1,104 +1,108 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   support_fun.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/01/08 19:03:15 by laubrey           #+#    #+#             */
+/*   Updated: 2022/01/11 20:03:04 by rchau            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void	error_nsfod(char *comm, char *arg)
+void	free_mass(char **mass)
 {
-	write(1, comm, ft_strlen(comm));
-	write(1, ": ", 2);
-	write(1, arg, ft_strlen(arg));
-	write(1, ": No such file or directory\n", 28);
-}
-
-void	error_nva(char *comm, char *arg)
-{
-	write(1, comm, ft_strlen(comm));
-	write(1, ": \'", 3);
-	write(1, arg, ft_strlen(arg));
-	write(1, "\': not a valid identifier\n", 26);
-}
-
-void free_mass(char **mass)
-{
-	int i;
-	int j;
+	int	i;
 
 	i = 0;
-	j = 0;
-
 	while (mass[i])
 		i++;
-	while (i >= 0)
+	while (--i >= 0)
 	{
 		free(mass[i]);
-		mass[i] = "\0";
-		i--:
+		mass[i] = NULL;
 	}
+	free(mass);
+	mass = NULL;
 }
 
-void	*one_mas_fr_two(char **str, char **from)
+void	one_mas_fr_two(t_sup *sup, char *from)
 {
-	int 	i;
-	int 	j;
+	int		i;
 	char	**mass;
 
 	i = 0;
-	j = 0;
-	while(str[i])
+	while (sup->env[i])
+	{
 		i++;
-	while(from[j])
-		j++;
-	mass = malloc(sizeof(char *) * (i + j + 1));
-	i = -1;
-	j = -1;
-	while (str[++i])
-		mass[i] = str[i];
-	while (from[++j])
-		mass[i + j] = from[j];
-	mass[i + j] = "\0";
-	free(str);
-	free(from);
-	str = mass;
+	}
+	mass = (char **)malloc(sizeof(char *) * (i + 2));
+	i = 0;
+	while ((sup->env)[i])
+	{
+		mass[i] = ft_strdup((sup->env)[i]);
+		i++;
+	}
+	mass[i] = malloc(sizeof(char) * (ft_strlen(from)));
+	ft_memcpy(mass[i], from, ft_strlen(from));
+	free_mass(sup->env);
+	mass[i + 1] = NULL;
+	sup->env = mass;
 }
 
 int	env_search_same(char *arg, char **env)
 {
-	int i;
-	int j;
-	int k;
+	int	i;
+	int	j;
+	int	k;
 
 	i = 0;
 	k = 0;
 	while (arg[k] != '=' && arg[k])
 		k++;
-	while ((*env)[i])
+	while (env[i])
 	{
 		j = 0;
 		while (env[i][j] != '=' && env[i][j])
+		{
 			j++;
+		}
 		if (!ft_memcmp(arg, env[i], j) && k == j)
+		{
 			return (i);
+		}
 		i++;
 	}
-	return (0);
+	return (-1);
 }
 
-//char	*env_search_value(char *arg, char **env)
-//{
-//	int i;
-//	int j;
-//	int k;
-//
-//	i = 0;
-//	k = 0;
-//	while (arg[k] != '=' && arg[k])
-//		k++;
-//	while ((*env)[i])
-//	{
-//		j = 0;
-//		while (env[i][j] != '=' && env[i][j])
-//			j++;
-//		if (k == j && !ft_memcmp(arg, env[i], j))
-//			return(&env[i][j]);
-//		i++;
-//	}
-//	return (0);
-//}
+void	cd_chdirs(char *sup, char **env)
+{
+	int		i;
+	int		j;
+	char	*oldpwd;
+
+	oldpwd = malloc(sizeof(char) * 1024);
+	getcwd(oldpwd, 1024);
+	if (chdir(sup))
+		g_status = error_nsfod("cd", sup);
+	else
+	{
+		i = env_search_same("OLDPWD\0", env);
+		if (i >= 0)
+		{
+			free(env[i]);
+			env[i] = ft_strjoin("OLDPWD=", oldpwd);
+		}
+		j = env_search_same("PWD\0", env);
+		if (j >= 0)
+		{
+			free(env[j]);
+			env[j] = ft_strjoin("PWD=\0", sup);
+		}
+		g_status = 0;
+	}
+	free(oldpwd);
+}

@@ -1,140 +1,110 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/01/10 14:14:36 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/11 23:03:58 by rchau            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void	parser(t_msh *op, char **argv)
+void	ft_pipe(t_msh *msh, int tmpin, int tmpout)
 {
-	int k;
-	int i;
-	int n;
-	int l;
-	int j[3];
-
-
-	i = 1;
-	k = 0;
-	while (argv[i])
+	if (msh->infile)
+		msh->fdin = open(msh->infile, O_RDONLY, 0644);
+	else if (msh->prev && !msh->prev->outfile)
+		msh->fdin = msh->prev->fdpipe[0];
+	else
+		msh->fdin = dup(tmpin);
+	if (msh->outfile && msh->write_mode == 2)
+		msh->fdout = open(msh->outfile, O_WRONLY | O_APPEND);
+	else if (msh->outfile && msh->write_mode == 1)
+		msh->fdout = open(msh->outfile, O_WRONLY | O_TRUNC);
+	else if (msh->next)
 	{
-		if (ft_strchr("|<>\0", argv[i][0]))
-			j[k++] = i;
-		i++;
+		pipe(msh->fdpipe);
+		msh->fdout = msh->fdpipe[1];
 	}
-	j[k] = i;
-	i = 0;
-	k = 1;
-	n = 0;
-	while (i != 3 && argv[k])
-	{
-		l = 0;
-		op[i].argv = malloc(sizeof(char *) * (j[n]));
-		while (k <= j[n] && argv[k])
-		{
-			if (!ft_strchr("|\0", argv[k][0]))
-			{
-
-				op[i].argv[l] = argv[k];
-			}
-			else
-				op[i].op = argv[k][0];
-			l++;
-			k++;
-		}
-		if (op[i].op)
-		{
-			op[i].argc = l - 1;
-			op[i].argv[l - 1] = NULL;
-		}
-		else
-		{
-			op[i].argc = l;
-			op[i].argv[l] = NULL;
-		}
-		if (i > 0)
-			op[i - 1].next = &(op[i]);
-		i++;
-		n++;
-	}
-	op[i].next = NULL;
+	else
+		msh->fdout = dup(tmpout);
+	dup2(msh->fdin, 0);
+	close(msh->fdin);
+	dup2(msh->fdout, 1);
+	close(msh->fdout);
 }
 
-void env_cpy(char **env, t_valu *values)
+int	ft_exec(t_msh *msh, t_sup *sup)
 {
-	int i;
+	char	*com;
+	int		status;
 
-	i = 0;
-	while (env[i])
-		i++;
-	values->env = (char **)malloc(sizeof(char *) * (i + 1));
-	i = 0;
-	while (env[i])
+	status = 0;
+	if (ft_if_builtin(msh))
+		return (ft_builtin(msh, sup));
+	com = ft_command(msh->argv[0], sup->env);
+	if (com)
 	{
-		values->env[i] = NULL;
-		values->env[i] = ft_strjoin(values->env[i], env[i]);
-		i++;
-	}
-	values->env[i + 1] = NULL;
-}
-
-int baby_process(t_valu *values, t_msh *op, int i)
-{
-	if (ft_built_in_cmd(op[i].argv, values->env))
+		msh->pid = fork();
+		if (msh->pid == 0)
+		{
+			execve(com, msh->argv, sup->env);
+			printf("minishell: %s: No such file or directory\n", com);
+			exit(1);
+		}
+		waitpid(msh->pid, &status, 0);
+		g_status = WSTOPSIG(status);
+		free(com);
 		return (0);
+	}
+	ft_no_command(msh);
+	return (1);
+}
+
+t_msh	*ft_execute_command(t_msh *msh, t_sup *sup, int *tmpin_out)
+{
+	ft_pipe(msh, tmpin_out[0], tmpin_out[1]);
+	ft_exec(msh, sup);
+	return (msh->next);
+}
+
+void	ft_free_msh(t_msh *msh, char *str, int *tmp)
+{
+	free(str);
+	dup2(tmp[0], 0);
+	dup2(tmp[1], 1);
+	close(tmp[0]);
+	close(tmp[1]);
+	free(tmp);
+	while (msh)
+		msh = ft_msh_free_one(msh);
+}
+
+int	main(int argc, char **argv, char **env)
+{
+	char	*str;
+	t_msh	*msh;
+	int		*tmpin_out;
+	t_sup	*sup;
+	t_msh	*save_msh;
+
+	sup = (t_sup *)malloc(sizeof(t_sup));
+	env_cpy(env, sup, argc, argv);
+	while (1)
+	{
+		tmpin_out = ft_signal_and_tmp_in_out();
+		str = readline("minishell$ ");
+		if (ft_check_str(str))
+			break ;
+		msh = ft_mshnew();
+		save_msh = msh;
+		if (*str != '\0' && msh && !ft_parser(msh, str, sup->env))
+			while (msh)
+				msh = ft_execute_command(msh, sup, tmpin_out);
+		ft_free_msh(save_msh, str, tmpin_out);
+	}
 	return (0);
-}
-
-int parent_process(t_valu *values, t_msh *op, int i)
-{
-	exit (0);
-}
-
-void fd_create(t_valu *values)
-{
-	int i;
-	int (*fd)[2];
-
-	i = 0;
-	values->pipe_cou = 0;
-	values->pipe_fd = 0;
-	values->fd = NULL;
-	while (values->op[i].next)
-	{
-		if (values->op[i].op == '|')
-			values->pipe_cou++;
-		i++;
-	}
-	fd = malloc(sizeof(fd[2]) * values->pipe_cou);
-	values->fd = fd;
-}
-
-int main(int argc, char **argv, char **env)
-{
-	int i;
-	t_msh	*op;
-	t_valu	values;
-
-	i = 0;
-	values.pipe_cou = 0;
-	env_cpy(env, &values);
-	op = (t_msh *)malloc(sizeof(t_msh) * 3);
-	parser(op, argv);
-	values.op = op;
-	fd_create(&values);
-	while (i < 3)
-	{
-		pipe(values.fd[values.pipe_fd]);
-		op[i].pid = fork();
-		if (op[i].pid != 0)
-			baby_process(&values, op, i);
-		else
-			parent_process(&values, op, i);
-		i++;
-	}
-	if (values.fd)
-	{
-		while (values.pipe_cou--)
-		{
-			close(values.fd[values.pipe_cou][0]);
-			close(values.fd[values.pipe_cou][1]);
-		}
-		free(values.fd);
-	}
-	return 0;
 }

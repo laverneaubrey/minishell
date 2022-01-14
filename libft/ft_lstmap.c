@@ -1,41 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strnstr.c                                       :+:      :+:    :+:   */
+/*   ft_lstmap.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/01/10 15:33:06 by rchau             #+#    #+#             */
-/*   Updated: 2022/01/10 15:33:07 by rchau            ###   ########.fr       */
+/*   Created: 2022/01/10 15:32:01 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:32:02 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strnstr(const char *s1, const char *s2, size_t n)
+t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 {
-	size_t	i;
-	size_t	j;
-	size_t	s_len;
-	size_t	s2_len;
-	char	*s;
+	t_list	*new_lst;
+	t_list	*tmp;
 
-	s = (char *)s1;
-	s_len = ft_strlen(s);
-	s2_len = ft_strlen(s2);
-	if (s2_len == 0)
-		return (s);
-	if (s_len < s2_len || n < s2_len)
+	if (!lst || !f)
 		return (NULL);
-	i = 0;
-	while (s[i])
+	new_lst = ft_lstnew(f(lst->content));
+	if (!new_lst)
+		return (NULL);
+	tmp = new_lst;
+	lst = lst->next;
+	while (lst)
 	{
-		j = 0;
-		while (s2[j] && s2[j] == s[i + j] && i + j < n)
-			j++;
-		if (j == s2_len)
-			return (&s[i]);
-		i++;
+		new_lst->next = ft_lstnew(f(lst->content));
+		if (!new_lst->next)
+		{
+			ft_lstclear(&tmp, del);
+			return (NULL);
+		}
+		new_lst = new_lst->next;
+		lst = lst->next;
 	}
-	return (NULL);
+	return (tmp);
 }

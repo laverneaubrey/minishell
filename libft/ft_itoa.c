@@ -3,70 +3,83 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laubrey <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/18 18:45:42 by laubrey           #+#    #+#             */
-/*   Updated: 2021/10/18 18:45:43 by laubrey          ###   ########.fr       */
+/*   Created: 2022/01/10 15:31:39 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:31:40 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	size(int num)
+static size_t	len(int n)
 {
-	int	i;
+	size_t	len;
 
-	i = 0;
-	if (num < 0)
+	len = 0;
+	if (n <= 0)
 	{
-		num = num * -1;
-		i++;
+		len++;
 	}
-	if (num == 0)
-		return (1);
-	while (num)
-	{
-		num = num / 10;
-		i++;
-	}
-	return (i);
-}
-
-char	*vnos(char *rev, int n, int i)
-{
-	if (n < 0)
-	{
-		rev[0] = '-';
-		n = n * -1;
-	}
-	rev[i] = '\0';
-	if (n == 0)
-		rev[0] = '0';
 	while (n != 0)
 	{
-		if (n < 0)
-			rev[0] = '-';
-		i--;
-		rev[i] = (n % 10) + '0';
-		n = n / 10;
+		len++;
+		n /= 10;
 	}
-	return (rev);
+	return (len);
+}
+
+static void	reverse(char *s)
+{
+	char	c;
+	size_t	len;
+	size_t	i;
+
+	len = ft_strlen(s);
+	i = 0;
+	while (i < len / 2)
+	{
+		c = s[i];
+		s[i] = s[len - i - 1];
+		s[len - i - 1] = c;
+		i++;
+	}
+}
+
+static void	strinrev(int n, char *s)
+{
+	size_t	i;
+	int		sign;
+
+	sign = n;
+	i = 0;
+	if (n == 0)
+		s[i++] = '0';
+	if (n < 0)
+	{
+		s[i++] = (n % 10) * -1 + '0';
+		n = (n / 10) * -1;
+	}
+	while (n > 0)
+	{
+		s[i++] = n % 10 + '0';
+		n /= 10;
+	}
+	if (sign < 0)
+		s[i++] = '-';
+	s[i] = '\0';
 }
 
 char	*ft_itoa(int n)
 {
-	int		i;
-	char	*rev;
+	char	*s;
+	size_t	k;
 
-	i = size(n);
-	rev = (char *)malloc(sizeof(char) * (i + 1));
-	if (!rev)
+	k = len(n);
+	s = malloc(sizeof(char) * k + 1);
+	if (!s)
 		return (NULL);
-	if (n == -2147483648)
-	{
-		ft_strlcpy(rev, "-2147483648", 12);
-		return (rev);
-	}
-	vnos(rev, n, i);
-	return (rev);
+	strinrev(n, s);
+	reverse(s);
+	return (s);
 }

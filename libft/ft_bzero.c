@@ -3,25 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laubrey <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/18 18:44:28 by laubrey           #+#    #+#             */
-/*   Updated: 2021/10/18 18:44:32 by laubrey          ###   ########.fr       */
+/*   Created: 2022/01/10 15:31:16 by rchau             #+#    #+#             */
+/*   Updated: 2022/01/10 15:31:17 by rchau            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_bzero(void *s, size_t	n)
+void	*ft_bzero(void *s, size_t n)
 {
-	char	*fis;
-	size_t	i;
+	unsigned char	*p;
 
-	i = 0;
-	fis = (char *)s;
-	while (n > i)
-	{
-		fis[i] = '\0';
-		i++;
-	}
+	p = (unsigned char *)s;
+	while (n--)
+		*p++ = '\0';
+	return (p);
 }

@@ -1,109 +1,104 @@
-#include "minishell.h"
-//
-//int	check_exp(char **arg, char **env)
-//{
-//	int i;
-//	int	j;
-//
-//	i = 1;
-//	while (arg[i])
-//	{
-//		if (arg[i][0] == '=' || ft_isdigit(arg[i][0]))
-//		{
-//			write(1, " export: \'", 10);
-//			write(1, arg[i], ft_strlen(arg[i]));
-//			write(1, "\': not a valid identifier\n", 26);
-//			exit_status = 1;
-//		}
-//		else
-//		{
-//
-//		}
-//		i++;
-//		}
-//}
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_export.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rchau <rchau@student.21-school.ru>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/01/08 19:01:47 by laubrey           #+#    #+#             */
+/*   Updated: 2022/01/11 20:02:13 by rchau            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-char	**env_sort(char **env)
+#include "minishell.h"
+
+int	env_sort(char **env)
 {
 	int		i;
-	int 	j;
-	int 	k;
-	char	**env_sap;
+	int		j;
+	int		k;
+	char	**env_sup;
 	char	*check;
 
 	i = 0;
-	while ((*env)[i])
+	while (env[i])
 		i++;
-	env_sap = malloc(sizeof(char **) * (i + 1));
-	i = -1;
-	while ((*env)[++i])
+	env_sup = (char **)malloc(sizeof(char *) * (i + 1));
+	env_sup[i] = NULL;
+	while (--i >= 0)
 	{
-		check = env[i];
+		check = ft_strdup(env[i]);
 		k = -1;
 		j = 0;
-		while ((*env)[++k])
+		while (env[++k])
 			if (ft_strncmp(check, env[k], ft_strlen(env[i]) + 1) > 0)
 				j++;
-		env_sap[j] = check;
+		env_sup[j] = check;
 	}
-	return (env_sap);
+	print_quotes(env_sup);
+	free_mass(env_sup);
+	return (0);
 }
 
-void	print_quotes(char *str)
+void	print_quotes(char **env)
 {
-	while (str && *str != '=')
-	{
-		write(1, str, 1);
-		str++;
-	}
-	if (str && *str == '=')
-	{
-		write(1, "=\"", 2);
-		str++;
-		while (str)
-		{
-			write(1, str, 1);
-			str++
-		}
-		write(1, "\"", 1);
-	}
-	write(1, "\n", 1);
-}
-
-int	ft_export(char **arg, char **env)
-{
-	int i;
-	int j;
-	char **sup;
+	int	i;
+	int	j;
 
 	i = -1;
-	j = 1;
-	if (!arg[1])
+	while (env[++i])
 	{
-		sup = env_sort(env);
-		while (sup[++i])
+		j = -1;
+		write(1, "declare -x ", 11);
+		while (env[i] && env[i][++j] != '=' && env[i][j] != '\0')
+			write(1, &env[i][j], 1);
+		if (env[i] && env[i][j] == '=')
 		{
-			write(1, "declare -x ", 11);
-			print_quotes(sup[i]);
+			write(1, "=\"", 2);
+			while (env[i] && env[i] != NULL && env[i][++j] != 0)
+				write(1, &env[i][j], 1);
+			write(1, "\"", 1);
 		}
-		free_mass(sup);
-		return (0);
+		write(1, "\n", 1);
 	}
-	while (arg[++i])
+}
+
+int	check_argv_ex(char *argv)
+{
+	if (!(ft_isalpha(argv[0])) || argv[0] == '=')
+		return (1);
+	while (*argv && *argv != '=')
 	{
-		if (!ft_isalpha(arg[i][0]))
-			error_nvi(arg[0], arg[i]);
+		if (*argv == '.')
+			return (1);
+		argv++;
+	}
+	return (0);
+}
+
+int	ft_export(char **argv, t_sup *sup)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	if (!argv[1])
+		return (env_sort(sup->env));
+	while (argv[++i])
+	{
+		if (check_argv_ex(argv[i]))
+			return (error_nva(argv[0], argv[i]));
 		else
 		{
-			j = env_search_same(arg[i], env);
-			if (j)
-				if (ft_strchr(arg[i], '='))
-				{
-					free(env[j]);
-					env[j] = arg[i];
-				}
+			j = env_search_same(argv[i], sup->env);
+			if (j >= 0)
+			{
+				free(sup->env[j]);
+				sup->env[j] = ft_strdup(argv[i]);
+			}
 			else
-				one_mas_fr_two(env, &arg[i]);
+				one_mas_fr_two(sup, argv[i]);
 		}
 	}
+	return (0);
 }
